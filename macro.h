@@ -14,4 +14,7 @@ const int ACCOUNT_TYPE_STUDENT = 1;
 const int ACCOUNT_TYPE_TEACHER = 2;
 const int ACCOUNT_TYPE_ADMIN = 3;
 
+const int CAUSE_TYPE_REQUIRED = 1;
+const int CAUSE_TYPE_OPTIONAL = 1;
+
 #endif // MACRO_H

@@ -12,7 +12,19 @@ UserInfo::UserInfo(QString name, int accountType, QString password, QString phon
 
 }
 
+UserInfo::UserInfo(qint64 id)
+    : id(id)
+{
+
+}
+
 UserInfo::UserInfo()
+{
+
+}
+
+CauseInfo::CauseInfo(QString causeName)
+    : causeName(causeName)
 {
 
 }

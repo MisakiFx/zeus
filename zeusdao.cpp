@@ -138,6 +138,8 @@ ErrorClass ZeusDao::QueryClassNameById(qint64 id, QString &name)
     name = query.value(0).toString();
     return ErrorClass();
 }
+
+//根据年级组id插曲年级组名称
 ErrorClass ZeusDao::QueryGrandNameById(qint64 id, QString &name)
 {
     QSqlDatabase db = QSqlDatabase::database();
@@ -153,5 +155,31 @@ ErrorClass ZeusDao::QueryGrandNameById(qint64 id, QString &name)
         return ErrorClass(ERRCODE_INPUT_ERROR, "未找到对应年级组信息");
     }
     name = query.value(0).toString();
+    return ErrorClass();
+}
+
+//根据班级名称获取班级具体信息
+ErrorClass ZeusDao::QueryCauseInfoByName(CauseInfo& causeInfo)
+{
+    QSqlDatabase db = QSqlDatabase::database();
+
+    QSqlQuery query;
+    QString sql = QString("SELECT * FROM zeus_cause_info WHERE cause_name = \"%1\"").arg(causeInfo.causeName);
+    if (!query.exec(sql))
+    {
+        return ErrorClass(ERRCODE_SERVICE_ERROR, db.lastError().isValid() ? db.lastError().text() : ERRMSG_UNKNOW_MSG);
+    }
+    if(!query.first())
+    {
+        return ErrorClass(ERRCODE_INPUT_ERROR, "未找到对应课程组信息");
+    }
+
+    causeInfo.id = query.value(0).toLongLong();
+    causeInfo.causeType = query.value(2).toInt();
+    causeInfo.score = query.value(3).toInt();
+    causeInfo.teacherId = query.value(4).toLongLong();
+    causeInfo.causeTime = query.value(5).toString().split(",");
+    causeInfo.causeWeek = query.value(6).toString().split(",");
+    causeInfo.classroom = query.value(7).toString();
     return ErrorClass();
 }

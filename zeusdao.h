@@ -16,6 +16,7 @@ public:
     static ErrorClass QueryUserInfoById(UserInfo& info);
     static ErrorClass QueryClassNameById(qint64 id, QString& name);
     static ErrorClass QueryGrandNameById(qint64 id, QString& name);
+    static ErrorClass QueryCauseInfoByName(CauseInfo& causeInfo);
 };
 
 #endif // ZEUSDAO_H
