@@ -17,6 +17,8 @@ DEFINES += QT_DEPRECATED_WARNINGS
 
 SOURCES += \
     causecheck.cpp \
+    causecheckhistory.cpp \
+    causegrade.cpp \
     errorclass.cpp \
     loginwindow.cpp \
     main.cpp \
@@ -28,6 +30,8 @@ SOURCES += \
 
 HEADERS += \
     causecheck.h \
+    causecheckhistory.h \
+    causegrade.h \
     errorclass.h \
     loginwindow.h \
     macro.h \
@@ -39,6 +43,8 @@ HEADERS += \
 
 FORMS += \
     causecheck.ui \
+    causecheckhistory.ui \
+    causegrade.ui \
     loginwindow.ui \
     mainwindow.ui \
     reginstdialog.ui

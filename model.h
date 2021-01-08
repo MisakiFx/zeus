@@ -23,6 +23,7 @@ struct CauseInfo
 {
     CauseInfo();
     CauseInfo(QString causeName);
+    CauseInfo(QString causeName, int causeType, int score, qint64 teacherId, QStringList causeTime, QStringList causeWeek, QString classroom, QStringList className, qint64 id = 0);
     qint64 				id;
     QString 			causeName;
     int 				causeType;
@@ -31,6 +32,42 @@ struct CauseInfo
     QStringList 		causeTime;
     QStringList 		causeWeek;
     QString 			classroom;
+    QStringList 		className;
+};
+
+struct LeaveAsk
+{
+    LeaveAsk();
+    LeaveAsk(qint64 teacherId, qint64 causeId, QString teachTime, qint64 stuId, qint64 id = 0, QString message = "", int status = 0);
+    qint64 	id;
+    qint64 	stuId;
+    qint64 	causeId;
+    qint64 	teacherId;
+    QString teachTime;
+    QString message;
+    int 	status;
+};
+
+struct CauseCheckModel
+{
+    CauseCheckModel();
+    CauseCheckModel(qint64 causeId, QString teachTime, qint64 stuId, int isLeave, qint64 id = 0);
+    qint64 	id;
+    qint64 	causeId;
+    QString teachTime;
+    qint64 	stuId;
+    int 	isLeave;
+};
+
+struct StuCauseRelModel
+{
+    StuCauseRelModel();
+    StuCauseRelModel(qint64 stdId, qint64 causeId);
+    qint64 id;
+    qint64 stuId;
+    qint64 causeId;
+    int score;
+    QString evalute;
 };
 
 #endif // MODEL_H

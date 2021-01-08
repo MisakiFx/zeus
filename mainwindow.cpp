@@ -1,16 +1,20 @@
 #include <QMessageBox>
 #include <QDebug>
 #include <QSqlError>
+#include <QListWidget>
+#include <QLineEdit>
+#include <QCheckBox>
 #include "mainwindow.h"
 #include "ui_mainwindow.h"
 #include "errorclass.h"
 #include "zeusdao.h"
 #include "macro.h"
 #include "causecheck.h"
+#include "causecheckhistory.h"
 
 MainWindow::MainWindow(QWidget *parent) :
-    QMainWindow(parent),
-    ui(new Ui::MainWindow)
+        QMainWindow(parent),
+        ui(new Ui::MainWindow)
 {
     ui->setupUi(this);
     //登录页面逻辑
@@ -24,13 +28,14 @@ MainWindow::MainWindow(QWidget *parent) :
         this->close();
         return;
     }
-    
+
     //初始化查询模型
     queryModel = new QSqlQueryModel(this);
 
     //普通测试
     this->show();
     InitAccount(2);
+    InitCreateCause();
 
     //初始化界面
     InitMenu();
@@ -93,6 +98,13 @@ void MainWindow::on_actionUserInfo_triggered()
     }
 }
 
+//创建课程页
+void MainWindow::on_actionCreateClass_triggered()
+{
+    ui->stackedWidget->setCurrentIndex(2);
+    ClearAllCreateCauseInput();
+}
+
 //我的课程详情页
 void MainWindow::on_actionMyClass_triggered()
 {
@@ -102,8 +114,14 @@ void MainWindow::on_actionMyClass_triggered()
     {
         ui->pushButtonGrade->setVisible(false);
         ui->pushButtonCauseCheck->setVisible(false);
+        ui->pushButtonCauseCheckHistory->setVisible(false);
+        ui->pushButtonEvalute->setVisible(true);
+        ui->pushButtonAbandonChoose->setVisible(true);
     } else
     {
+        ui->pushButtonGrade->setVisible(true);
+        ui->pushButtonCauseCheck->setVisible(true);
+        ui->pushButtonCauseCheckHistory->setVisible(true);
         ui->pushButtonEvalute->setVisible(false);
         ui->pushButtonAbandonChoose->setVisible(false);
     }
@@ -163,6 +181,7 @@ void MainWindow::DealLoginSlog(qint64 accountId)
 
     //初始化用户数据
     InitAccount(accountId);
+    InitMenu();
     on_actionUserInfo_triggered();
 }
 
@@ -172,16 +191,21 @@ void MainWindow::InitMenu()
     case ACCOUNT_TYPE_STUDENT:
         ui->actionCreateClass->setVisible(false);
         ui->actionLaeveControl->setVisible(false);
+        ui->actionChooseClass->setVisible(true);
+        ui->actionLeaveAsk->setVisible(true);
         ui->menuAdmin->menuAction()->setVisible(false);
         break;
     case ACCOUNT_TYPE_TEACHER:
         ui->actionChooseClass->setVisible(false);
         ui->actionLeaveAsk->setVisible(false);
+        ui->actionCreateClass->setVisible(true);
+        ui->actionLaeveControl->setVisible(true);
         ui->menuAdmin->menuAction()->setVisible(false);
         break;
     case ACCOUNT_TYPE_ADMIN:
         ui->menuClass->menuAction()->setVisible(false);
         ui->menuLeave->menuAction()->setVisible(false);
+        ui->menuAdmin->menuAction()->setVisible(true);
         break;
     default:
         break;
@@ -195,7 +219,7 @@ ErrorClass MainWindow::FlushMyClassComboBox()
     {
         queryModel->setQuery(QString("SELECT cause_name From zeus_cause_info cause_info \
                                      INNER JOIN zeus_stu_cause_rel cause_rel ON cause_info.id = cause_rel.cause_id \
-                                     WHERE cause_rel.stu_id = %1").arg(userInfo.id));
+                        WHERE cause_rel.stu_id = %1").arg(userInfo.id));
     } else
     {
         queryModel->setQuery(QString("SELECT cause_name From zeus_cause_info WHERE teacher_id = %1").arg(userInfo.id));
@@ -275,8 +299,362 @@ void MainWindow::on_comboMyClass_currentIndexChanged(const QString &arg1)
     }
 }
 
+//我的课程页考勤管理功能
 void MainWindow::on_pushButtonCauseCheck_released()
 {
-    CauseCheck checkDialog(this);
+    QString className = ui->comboMyClass->currentText();
+    CauseInfo causeInfo(className);
+    ErrorClass err = ZeusDao::QueryCauseInfoByName(causeInfo);
+    if(err.GetCode() != ERRCODE_SUCCESS)
+    {
+        QMessageBox::warning(this, "警告", err.GetMsg());
+        return;
+    }
+    CauseCheck checkDialog(causeInfo, this);
     checkDialog.exec();
+}
+
+//查看课程缺勤历史记录
+void MainWindow::on_pushButtonCauseCheckHistory_released()
+{
+    QString className = ui->comboMyClass->currentText();
+    CauseInfo causeInfo(className);
+    ErrorClass err = ZeusDao::QueryCauseInfoByName(causeInfo);
+    if(err.GetCode() != ERRCODE_SUCCESS)
+    {
+        QMessageBox::warning(this, "警告", err.GetMsg());
+        return;
+    }
+    CauseCheckHistory causeCheckHistory(this, causeInfo.id);
+    causeCheckHistory.exec();
+}
+
+//更新周多选框状态
+void MainWindow::WeekStateChanged(int state)
+{
+    bSelectedWeek = true;
+    QString strSelectedData("");
+    strSelectedTextWeek.clear();
+    int nCount = listWidgetWeek->count();
+    for (int i = 0; i < nCount; ++i)
+    {
+        QListWidgetItem *pItem = listWidgetWeek->item(i);
+        QWidget *pWidget = listWidgetWeek->itemWidget(pItem);
+        QCheckBox *pCheckBox = (QCheckBox *)pWidget;
+        if (pCheckBox->isChecked())
+        {
+            QString strText = pCheckBox->text();
+            strSelectedData.append(strText).append(",");
+        }
+    }
+    if (strSelectedData.endsWith(","))
+        strSelectedData.remove(strSelectedData.count() - 1, 1);
+    if (!strSelectedData.isEmpty())
+    {
+        strSelectedTextWeek = strSelectedData;
+        lineEditWeek->setText(strSelectedData);
+        lineEditWeek->setToolTip(strSelectedData);
+    }
+    else
+    {
+        lineEditWeek->clear();
+    }
+    bSelectedWeek = false;
+}
+
+//更新时间多选框状态
+void MainWindow::TimeStateChanged(int state)
+{
+    bSelectedTime = true;
+    QString strSelectedData("");
+    strSelectedTextTime.clear();
+    int nCount = listWidgetTime->count();
+    for (int i = 0; i < nCount; ++i)
+    {
+        QListWidgetItem *pItem = listWidgetTime->item(i);
+        QWidget *pWidget = listWidgetTime->itemWidget(pItem);
+        QCheckBox *pCheckBox = (QCheckBox *)pWidget;
+        if (pCheckBox->isChecked())
+        {
+            QString strText = pCheckBox->text();
+            strSelectedData.append(strText).append(",");
+        }
+    }
+    if (strSelectedData.endsWith(","))
+        strSelectedData.remove(strSelectedData.count() - 1, 1);
+    if (!strSelectedData.isEmpty())
+    {
+        strSelectedTextTime = strSelectedData;
+        lineEditTime->setText(strSelectedData);
+        lineEditTime->setToolTip(strSelectedData);
+    }
+    else
+    {
+        lineEditTime->clear();
+    }
+    bSelectedTime = false;
+}
+
+//更新班级多选框状态
+void MainWindow::ClassStateChanged(int state)
+{
+    bSelectedClass = true;
+    QString strSelectedData("");
+    strSelectedTextClass.clear();
+    int nCount = listWidgetClass->count();
+    for (int i = 0; i < nCount; ++i)
+    {
+        QListWidgetItem *pItem = listWidgetClass->item(i);
+        QWidget *pWidget = listWidgetClass->itemWidget(pItem);
+        QCheckBox *pCheckBox = (QCheckBox *)pWidget;
+        if (pCheckBox->isChecked())
+        {
+            QString strText = pCheckBox->text();
+            strSelectedData.append(strText).append(",");
+        }
+    }
+    if (strSelectedData.endsWith(","))
+        strSelectedData.remove(strSelectedData.count() - 1, 1);
+    if (!strSelectedData.isEmpty())
+    {
+        strSelectedTextClass = strSelectedData;
+        lineEditClass->setText(strSelectedData);
+        lineEditClass->setToolTip(strSelectedData);
+    }
+    else
+    {
+        lineEditClass->clear();
+    }
+    bSelectedClass = false;
+}
+
+//更新周多选框文案
+void MainWindow::WeekTextChanged(const QString &text)
+{
+    if (!bSelectedWeek)
+        lineEditWeek->setText(strSelectedTextWeek);
+}
+
+//更新时间多选框文案
+void MainWindow::TimeTextChanged(const QString &text)
+{
+    if (!bSelectedTime)
+        lineEditTime->setText(strSelectedTextTime);
+}
+
+//更新班级多选框文案
+void MainWindow::ClassTextChanged(const QString &text)
+{
+    if (!bSelectedClass)
+        lineEditClass->setText(strSelectedTextClass);
+}
+
+//绘制上课周多选框
+void MainWindow::DrawWeekStatusComb()
+{
+    listWidgetWeek = new QListWidget(this);
+    lineEditWeek = new QLineEdit(this);
+    for (int i = 1; i <= 20; ++i)
+    {
+        QListWidgetItem *pItem = new QListWidgetItem(listWidgetWeek);
+        listWidgetWeek->addItem(pItem);
+        pItem->setData(Qt::UserRole, i);
+        QCheckBox *pCheckBox = new QCheckBox(this);
+        pCheckBox->setText(QStringLiteral("%1").arg(i));
+        listWidgetWeek->addItem(pItem);
+        listWidgetWeek->setItemWidget(pItem, pCheckBox);
+        connect(pCheckBox, SIGNAL(stateChanged(int)), this, SLOT(WeekStateChanged(int)));
+    }
+    ui->comboCreateCauseWeek->setModel(listWidgetWeek->model());
+    ui->comboCreateCauseWeek->setView(listWidgetWeek);
+    ui->comboCreateCauseWeek->setLineEdit(lineEditWeek);
+    lineEditWeek->setReadOnly(true);                                                                                                                    //ui.comboBox->setEditable(true);
+    connect(lineEditWeek, SIGNAL(textChanged(const QString &)), this, SLOT(WeekTextChanged(const QString &)));
+}
+
+//绘制上课时间多选框
+void MainWindow::DrawTimeStatusComb()
+{
+    listWidgetTime = new QListWidget(this);
+    lineEditTime = new QLineEdit(this);
+    for (int i = 1; i <= 5; ++i)
+    {
+        for (int j = 1; j <= 7; j+=2)
+        {
+            QListWidgetItem *pItem = new QListWidgetItem(listWidgetTime);
+            listWidgetTime->addItem(pItem);
+            pItem->setData(Qt::UserRole, i);
+            QCheckBox *pCheckBox = new QCheckBox(this);
+            pCheckBox->setText(QStringLiteral("%1_%2").arg(i).arg(QString::number(j) + QString::number(j + 1)));
+            listWidgetTime->addItem(pItem);
+            listWidgetTime->setItemWidget(pItem, pCheckBox);
+            connect(pCheckBox, SIGNAL(stateChanged(int)), this, SLOT(TimeStateChanged(int)));
+        }
+    }
+    ui->comboCreateCauseTime->setModel(listWidgetTime->model());
+    ui->comboCreateCauseTime->setView(listWidgetTime);
+    ui->comboCreateCauseTime->setLineEdit(lineEditTime);
+    lineEditTime->setReadOnly(true);                                                                                                                    //ui.comboBox->setEditable(true);
+    connect(lineEditTime, SIGNAL(textChanged(const QString &)), this, SLOT(TimeTextChanged(const QString &)));
+}
+
+//绘制上课班级多选框
+void MainWindow::DrawClassStatusComb()
+{
+    listWidgetClass = new QListWidget(this);
+    lineEditClass = new QLineEdit(this);
+    QStringList names;
+    ErrorClass err = ZeusDao::QueryAllClassName(names);
+    if(err.GetCode() != ERRCODE_SUCCESS)
+    {
+        QMessageBox::warning(this, "警告", err.GetMsg());
+        return;
+    }
+    for (int i = 0; i < names.size(); ++i)
+    {
+        QListWidgetItem *pItem = new QListWidgetItem(listWidgetClass);
+        listWidgetClass->addItem(pItem);
+        pItem->setData(Qt::UserRole, i);
+        QCheckBox *pCheckBox = new QCheckBox(this);
+        pCheckBox->setText(QStringLiteral("%1").arg(names[i]));
+        listWidgetClass->addItem(pItem);
+        listWidgetClass->setItemWidget(pItem, pCheckBox);
+        connect(pCheckBox, SIGNAL(stateChanged(int)), this, SLOT(ClassStateChanged(int)));
+    }
+    ui->comboCreateCauseClass->setModel(listWidgetClass->model());
+    ui->comboCreateCauseClass->setView(listWidgetClass);
+    ui->comboCreateCauseClass->setLineEdit(lineEditClass);
+    lineEditClass->setReadOnly(true);                                                                                                                    //ui.comboBox->setEditable(true);
+    connect(lineEditClass, SIGNAL(textChanged(const QString &)), this, SLOT(ClassTextChanged(const QString &)));
+}
+
+//清空所有复选框
+void MainWindow::ClearAllCreateCauseInput()
+{
+    //时间
+    int nCount = listWidgetTime->count();
+    for (int i = 0; i < nCount; ++i)
+    {
+        QListWidgetItem *pItem = listWidgetTime->item(i);
+        QWidget *pWidget = listWidgetTime->itemWidget(pItem);
+        QCheckBox *pCheckBox = (QCheckBox *)pWidget;
+        if (pCheckBox->isChecked())
+        {
+            pCheckBox->setCheckState(Qt::Unchecked);
+        }
+    }
+    //周次
+    nCount = listWidgetWeek->count();
+    for (int i = 0; i < nCount; ++i)
+    {
+        QListWidgetItem *pItem = listWidgetWeek->item(i);
+        QWidget *pWidget = listWidgetWeek->itemWidget(pItem);
+        QCheckBox *pCheckBox = (QCheckBox *)pWidget;
+        if (pCheckBox->isChecked())
+        {
+            pCheckBox->setCheckState(Qt::Unchecked);
+        }
+    }
+    //课程
+    nCount = listWidgetClass->count();
+    for (int i = 0; i < nCount; ++i)
+    {
+        QListWidgetItem *pItem = listWidgetClass->item(i);
+        QWidget *pWidget = listWidgetClass->itemWidget(pItem);
+        QCheckBox *pCheckBox = (QCheckBox *)pWidget;
+        if (pCheckBox->isChecked())
+        {
+            pCheckBox->setCheckState(Qt::Unchecked);
+        }
+    }
+
+    ui->lineEditCreateCauseNameContent->clear();
+    ui->lineEditCreateCauseScoreContent->clear();
+    ui->lineEditCreateCauseClassroomContent->clear();
+    ui->comboCreateCauseType->setCurrentIndex(0);
+}
+
+//创建课程提交按钮
+void MainWindow::on_pushButtonSubbmit_released()
+{
+    //入参校验
+    if(ui->lineEditCreateCauseNameContent->text().compare("") == 0)
+    {
+        QMessageBox::warning(this, "警告", "课程名称不能为空");
+        return;
+    }
+    if(ui->comboCreateCauseType->currentText().compare("") == 0)
+    {
+        QMessageBox::warning(this, "警告", "课程类型不能为空");
+        return;
+    }
+    if(ui->lineEditCreateCauseScoreContent->text().compare("") == 0)
+    {
+        QMessageBox::warning(this, "警告", "课程学分不能为空");
+        return;
+    }
+    if(ui->lineEditCreateCauseClassroomContent->text().compare("") == 0)
+    {
+        QMessageBox::warning(this, "警告", "课程教室不能为空");
+        return;
+    }
+    if(ui->comboCreateCauseTime->currentText().compare("") == 0)
+    {
+        QMessageBox::warning(this, "警告", "上课时间不能为空");
+        return;
+    }
+    if(ui->comboCreateCauseWeek->currentText().compare("") == 0)
+    {
+        QMessageBox::warning(this, "警告", "上课周次不能为空");
+        return;
+    }
+    if(ui->comboCreateCauseType->currentText().compare("必修课") == 0 &&
+            ui->comboCreateCauseClass->currentText().compare("") == 0)
+    {
+        QMessageBox::warning(this, "警告", "必修课上课班级不能为空");
+        return;
+    }
+    //创建课程
+    CauseInfo causeInfo(ui->lineEditCreateCauseNameContent->text(),
+                       ui->comboCreateCauseType->currentText().compare("必修课") == 0 ? CAUSE_TYPE_REQUIRED : CAUSE_TYPE_OPTIONAL,
+                       ui->lineEditCreateCauseScoreContent->text().toInt(),
+                       userInfo.id,
+                       ui->comboCreateCauseTime->currentText().split(","),
+                       ui->comboCreateCauseWeek->currentText().split(","),
+                       ui->lineEditCreateCauseClassroomContent->text(),
+                       ui->comboCreateCauseClass->currentText().split(","));
+    ErrorClass err = ZeusDao::CreateNewClassInfo(causeInfo);
+    if (err.GetCode() != ERRCODE_SUCCESS)
+    {
+        QMessageBox::warning(this, "警告", err.GetMsg());
+        return;
+    }
+    QMessageBox::information(this, "成功", "课程新建成功");
+    ClearAllCreateCauseInput();
+    return;
+}
+
+//初始化创建课程页面
+void MainWindow::InitCreateCause()
+{
+    DrawWeekStatusComb();
+    DrawTimeStatusComb();
+    DrawClassStatusComb();
+    ui->comboCreateCauseType->addItem("必修课");
+    ui->comboCreateCauseType->addItem("选修课");
+    QRegExp regExp("^[0-9]*$");
+    QRegExpValidator *pattern= new QRegExpValidator(regExp, this);//创建了一个表达式
+    ui->lineEditCreateCauseScoreContent->setValidator(pattern);
+}
+
+//创建课程页切换课程类型逻辑
+void MainWindow::on_comboCreateCauseType_currentIndexChanged(int index)
+{
+    if(ui->comboCreateCauseType->currentText() == "必修课")
+    {
+        ui->layoutCreateCauseClass->setVisible(true);
+    } else
+    {
+        ui->layoutCreateCauseClass->setVisible(false);
+    }
 }

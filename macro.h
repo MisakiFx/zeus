@@ -17,4 +17,8 @@ const int ACCOUNT_TYPE_ADMIN = 3;
 const int CAUSE_TYPE_REQUIRED = 1;
 const int CAUSE_TYPE_OPTIONAL = 1;
 
+const int LEAVING_ASK_STAUTS_ASKING = 1;
+const int LEAVING_ASK_STAUTS_PASS = 2;
+const int LEAVING_ASK_STAUTS_REFUSE = 3;
+
 #endif // MACRO_H
