@@ -185,7 +185,7 @@ ErrorClass ZeusDao::QueryCauseInfoByName(CauseInfo& causeInfo)
     return ErrorClass();
 }
 
-//根据课程id获取所有选课学生id
+//根据课程id获取所有选课学生信息
 ErrorClass ZeusDao::QueryStudentInfoByCauseId(qint64 causeId, QVector<UserInfo>& studentInfo)
 {
     QSqlDatabase db = QSqlDatabase::database();
@@ -221,6 +221,7 @@ ErrorClass ZeusDao::QueryClassNameByIdBatch(QVector<qint64> classId, QHash<qint6
         }
     }
     QString sql = QString("SELECT * FROM zeus_class_info WHERE id IN (%1)").arg(idsString);
+    qDebug() << sql;
     if (!query.exec(sql))
     {
         return ErrorClass(ERRCODE_SERVICE_ERROR, db.lastError().isValid() ? db.lastError().text() : ERRMSG_UNKNOW_MSG);
@@ -413,7 +414,122 @@ ErrorClass ZeusDao::CreateNewClassInfo(CauseInfo &causeInfo)
     return ErrorClass();
 }
 
-ErrorClass ZeusDao::InsertStuCauseRel(CauseCheckModel rel)
+//根据课程id查询关联表信息
+ErrorClass ZeusDao::QueryStuCauseRelByCauseId(qint64 causeId, QHash<qint64, StuCauseRelModel>& stuIdCauseRelMap)
 {
+    QSqlDatabase db = QSqlDatabase::database();
+    QSqlQuery query;
+    QString sql = QString("SELECT * FROM zeus_stu_cause_rel WHERE cause_id = %1").arg(causeId);
+    if (!query.exec(sql))
+    {
+        db.rollback();
+        return ErrorClass(ERRCODE_SERVICE_ERROR, db.lastError().isValid() ? db.lastError().text() : ERRMSG_UNKNOW_MSG);
+    }
+    for(; query.next(); )
+    {
+        qint64 stuId = query.value(1).toLongLong();
+        stuIdCauseRelMap.insert(stuId, StuCauseRelModel(
+                                    stuId,
+                                    query.value(2).toLongLong(),
+                                    query.value(3).toInt(),
+                                    query.value(4).toString(),
+                                    query.value(0).toLongLong()));
+    }
+
+    return ErrorClass();
+}
+
+//批量修改学生成绩
+ErrorClass ZeusDao::UpdateStuCauseRelScoreBatch(QVector<StuCauseRelModel> rels)
+{
+    QSqlDatabase db = QSqlDatabase::database();
+    QSqlQuery query;
+    if (!db.transaction())
+    {
+        return ErrorClass(ERRCODE_SERVICE_ERROR, db.lastError().isValid() ? db.lastError().text() : ERRMSG_UNKNOW_MSG);
+    }
+    for (int i = 0; i < rels.size(); i++)
+    {
+        QString sql = QString("UPDATE zeus_stu_cause_rel SET score = %1 WHERE cause_id = %2 AND stu_id = %3")
+                .arg(rels[i].score)
+                .arg(rels[i].causeId)
+                .arg(rels[i].stuId);
+        if (!query.exec(sql))
+        {
+            db.rollback();
+            return ErrorClass(ERRCODE_SERVICE_ERROR, db.lastError().isValid() ? db.lastError().text() : ERRMSG_UNKNOW_MSG);
+        }
+    }
+    db.commit();
+    return ErrorClass();
+}
+
+//根据课程id和学生id查询课程和学生关联表信息
+ErrorClass ZeusDao::QueryStuCauseRelByCauseIdAndStuId(StuCauseRelModel &stuCauseRel)
+{
+    QSqlDatabase db = QSqlDatabase::database();
+    QSqlQuery query;
+    QString sql = QString("SELECT * FROM zeus_stu_cause_rel WHERE cause_id = %1 AND stu_id = %2")
+            .arg(stuCauseRel.causeId)
+            .arg(stuCauseRel.stuId);
+    if (!query.exec(sql))
+    {
+        return ErrorClass(ERRCODE_SERVICE_ERROR, db.lastError().isValid() ? db.lastError().text() : ERRMSG_UNKNOW_MSG);
+    }
+    if (!query.first())
+    {
+        return ErrorClass(ERRCODE_INPUT_ERROR, "该学生没有选择该课程");
+    }
+    stuCauseRel.id = query.value(0).toLongLong();
+    stuCauseRel.score = query.value(3).toInt();
+    stuCauseRel.evalute = query.value(4).toString();
+    return ErrorClass();
+}
+
+//根据学号和课程编号修改学生评教信息
+ErrorClass ZeusDao::UpdateStuCauseRelEvalute(const StuCauseRelModel &rel)
+{
+    QSqlDatabase db = QSqlDatabase::database();
+    QSqlQuery query;
+    QString sql = QString("UPDATE zeus_stu_cause_rel SET evalute = '%1' WHERE cause_id = %2 AND stu_id = %3")
+            .arg(rel.evalute)
+            .arg(rel.causeId)
+            .arg(rel.stuId);
+    if (!query.exec(sql))
+    {
+        return ErrorClass(ERRCODE_SERVICE_ERROR, db.lastError().isValid() ? db.lastError().text() : ERRMSG_UNKNOW_MSG);
+    }
+    return ErrorClass();
+}
+
+ErrorClass ZeusDao::DeleteStuCauseRel(const StuCauseRelModel& rel)
+{
+    QSqlDatabase db = QSqlDatabase::database();
+    QSqlQuery query;
+    QString sql = QString("DELETE FROM zeus_stu_cause_rel WHERE cause_id = %1 AND stu_id = %2")
+            .arg(rel.causeId)
+            .arg(rel.stuId);
+    if (!query.exec(sql))
+    {
+        return ErrorClass(ERRCODE_SERVICE_ERROR, db.lastError().isValid() ? db.lastError().text() : ERRMSG_UNKNOW_MSG);
+    }
+    return ErrorClass();
+}
+
+//插入管理表信息
+ErrorClass ZeusDao::InsertStuCauseRel(const StuCauseRelModel& rel)
+{
+    QSqlDatabase db = QSqlDatabase::database();
+    QSqlQuery query;
+    qint64 id = ToolCLass::IDGenerate();
+    QString sql = QString("INSERT INTO zeus_stu_cause_rel(id, stu_id, cause_id) VALUES(%1, %2, %3)")
+            .arg(id)
+            .arg(rel.stuId)
+            .arg(rel.causeId);
+    if (!query.exec(sql))
+    {
+        db.rollback();
+        return ErrorClass(ERRCODE_SERVICE_ERROR, db.lastError().isValid() ? db.lastError().text() : ERRMSG_UNKNOW_MSG);
+    }
     return ErrorClass();
 }

@@ -18,7 +18,7 @@
     <item>
      <widget class="QStackedWidget" name="stackedWidget">
       <property name="currentIndex">
-       <number>2</number>
+       <number>1</number>
       </property>
       <widget class="QWidget" name="pageUserInfo">
        <layout class="QGridLayout" name="gridLayout">
@@ -257,7 +257,7 @@
         </item>
        </layout>
       </widget>
-      <widget class="QWidget" name="pageMyClass">
+      <widget class="QWidget" name="pageMyCause">
        <layout class="QGridLayout" name="gridLayout_4">
         <item row="0" column="0" colspan="2">
          <widget class="QWidget" name="widget_10" native="true">
@@ -282,7 +282,7 @@
             </spacer>
            </item>
            <item>
-            <widget class="QLabel" name="labelCauseNameTitle_4">
+            <widget class="QLabel" name="labelMyCauseTitle">
              <property name="minimumSize">
               <size>
                <width>0</width>
@@ -325,7 +325,7 @@
          </widget>
         </item>
         <item row="1" column="1">
-         <widget class="QComboBox" name="comboMyClass"/>
+         <widget class="QComboBox" name="comboMyCause"/>
         </item>
         <item row="2" column="0" colspan="2">
          <widget class="QWidget" name="widget_2" native="true">
@@ -622,6 +622,13 @@
             </widget>
            </item>
            <item>
+            <widget class="QPushButton" name="pushButtonChooseCause">
+             <property name="text">
+              <string>选课</string>
+             </property>
+            </widget>
+           </item>
+           <item>
             <widget class="QPushButton" name="pushButtonAbandonChoose">
              <property name="minimumSize">
               <size>
@@ -684,7 +691,7 @@
         </item>
        </layout>
       </widget>
-      <widget class="QWidget" name="pageCreateClass">
+      <widget class="QWidget" name="pageCreateCause">
        <layout class="QGridLayout" name="gridLayout_10">
         <item row="0" column="0">
          <spacer name="horizontalSpacer_17">
@@ -1283,7 +1290,7 @@
     <property name="title">
      <string>班级</string>
     </property>
-    <addaction name="actionMyClass"/>
+    <addaction name="actionMyCause"/>
     <addaction name="actionChooseClass"/>
     <addaction name="actionCreateClass"/>
    </widget>
@@ -1335,7 +1342,7 @@
     <string>退出登录</string>
    </property>
   </action>
-  <action name="actionMyClass">
+  <action name="actionMyCause">
    <property name="text">
     <string>我的课程</string>
    </property>

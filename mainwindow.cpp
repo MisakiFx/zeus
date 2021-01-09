@@ -4,6 +4,7 @@
 #include <QListWidget>
 #include <QLineEdit>
 #include <QCheckBox>
+#include "evalute.h"
 #include "mainwindow.h"
 #include "ui_mainwindow.h"
 #include "errorclass.h"
@@ -11,6 +12,7 @@
 #include "macro.h"
 #include "causecheck.h"
 #include "causecheckhistory.h"
+#include "causegrade.h"
 
 MainWindow::MainWindow(QWidget *parent) :
         QMainWindow(parent),
@@ -34,11 +36,11 @@ MainWindow::MainWindow(QWidget *parent) :
 
     //普通测试
     this->show();
-    InitAccount(2);
+    InitAccount(202116097525445712);
     InitCreateCause();
 
     //初始化界面
-    InitMenu();
+    InitMainWindow();
     on_actionUserInfo_triggered();
 
     //设置信号
@@ -106,7 +108,7 @@ void MainWindow::on_actionCreateClass_triggered()
 }
 
 //我的课程详情页
-void MainWindow::on_actionMyClass_triggered()
+void MainWindow::on_actionMyCause_triggered()
 {
     //切换分页
     ui->stackedWidget->setCurrentIndex(1);
@@ -117,6 +119,8 @@ void MainWindow::on_actionMyClass_triggered()
         ui->pushButtonCauseCheckHistory->setVisible(false);
         ui->pushButtonEvalute->setVisible(true);
         ui->pushButtonAbandonChoose->setVisible(true);
+        ui->pushButtonChooseCause->setVisible(false);
+        ui->labelMyCauseTitle->setText("我的课程");
     } else
     {
         ui->pushButtonGrade->setVisible(true);
@@ -124,9 +128,11 @@ void MainWindow::on_actionMyClass_triggered()
         ui->pushButtonCauseCheckHistory->setVisible(true);
         ui->pushButtonEvalute->setVisible(false);
         ui->pushButtonAbandonChoose->setVisible(false);
+        ui->pushButtonChooseCause->setVisible(false);
     }
+    ClearMyCauseInfo();
     //初始化下拉列表
-    ErrorClass err = FlushMyClassComboBox();
+    ErrorClass err = FlushMyCauseComboBox();
     if(err.GetCode() != ERRCODE_SUCCESS)
     {
         QMessageBox::warning(this, "警告", err.GetMsg());
@@ -181,11 +187,11 @@ void MainWindow::DealLoginSlog(qint64 accountId)
 
     //初始化用户数据
     InitAccount(accountId);
-    InitMenu();
+    InitMainWindow();
     on_actionUserInfo_triggered();
 }
 
-void MainWindow::InitMenu()
+void MainWindow::InitMainWindow()
 {
     switch (userInfo.accountType) {
     case ACCOUNT_TYPE_STUDENT:
@@ -212,8 +218,8 @@ void MainWindow::InitMenu()
     }
 }
 
-//初始化下拉列表
-ErrorClass MainWindow::FlushMyClassComboBox()
+//初始化我的课程下拉列表
+ErrorClass MainWindow::FlushMyCauseComboBox()
 {
     if(userInfo.accountType == ACCOUNT_TYPE_STUDENT)
     {
@@ -224,20 +230,33 @@ ErrorClass MainWindow::FlushMyClassComboBox()
     {
         queryModel->setQuery(QString("SELECT cause_name From zeus_cause_info WHERE teacher_id = %1").arg(userInfo.id));
     }
-    ui->comboMyClass->setModel(queryModel);
+    ui->comboMyCause->setModel(queryModel);
     if(queryModel->lastError().isValid())
     {
         return ErrorClass(ERRCODE_SERVICE_ERROR, queryModel->lastError().text());
     }
-    ui->comboMyClass->setCurrentIndex(0);
+    ui->comboMyCause->setCurrentIndex(0);
+    return ErrorClass();
+}
+
+//初始化选择课程下拉列表
+ErrorClass MainWindow::FlushChooseCauseComboBox()
+{
+    queryModel->setQuery(QString("SELECT cause_name FROM zeus_cause_info WHERE cause_type = %1").arg(CAUSE_TYPE_OPTIONAL));
+    ui->comboMyCause->setModel(queryModel);
+    if(queryModel->lastError().isValid())
+    {
+        return ErrorClass(ERRCODE_SERVICE_ERROR, queryModel->lastError().text());
+    }
+    ui->comboMyCause->setCurrentIndex(0);
     return ErrorClass();
 }
 
 //初始化课程信息
-ErrorClass MainWindow::FlushMyClassInfo()
+ErrorClass MainWindow::FlushCauseInfo()
 {
-    QString className = ui->comboMyClass->currentText();
-    CauseInfo causeInfo(className);
+    QString causeName = ui->comboMyCause->currentText();
+    CauseInfo causeInfo(causeName);
     ErrorClass err = ZeusDao::QueryCauseInfoByName(causeInfo);
     if(err.GetCode() != ERRCODE_SUCCESS)
     {
@@ -285,25 +304,35 @@ ErrorClass MainWindow::FlushMyClassInfo()
 }
 
 //我的课程页课程切换
-void MainWindow::on_comboMyClass_currentIndexChanged(const QString &arg1)
+void MainWindow::on_comboMyCause_currentIndexChanged(const QString &arg1)
 {
     if(arg1.compare("") == 0)
     {
         return;
     }
-    ErrorClass err = FlushMyClassInfo();
+    ErrorClass err = FlushCauseInfo();
     if(err.GetCode() != ERRCODE_SUCCESS)
     {
         QMessageBox::warning(this, "警告", err.GetMsg());
         return;
+    }
+    if (userInfo.accountType == ACCOUNT_TYPE_STUDENT)
+    {
+        if (ui->labelCauseTypeContent->text().compare("必修课") == 0)
+        {
+            ui->pushButtonAbandonChoose->setVisible(false);
+        } else
+        {
+            ui->pushButtonAbandonChoose->setVisible(true);
+        }
     }
 }
 
 //我的课程页考勤管理功能
 void MainWindow::on_pushButtonCauseCheck_released()
 {
-    QString className = ui->comboMyClass->currentText();
-    CauseInfo causeInfo(className);
+    QString causeName = ui->comboMyCause->currentText();
+    CauseInfo causeInfo(causeName);
     ErrorClass err = ZeusDao::QueryCauseInfoByName(causeInfo);
     if(err.GetCode() != ERRCODE_SUCCESS)
     {
@@ -317,8 +346,8 @@ void MainWindow::on_pushButtonCauseCheck_released()
 //查看课程缺勤历史记录
 void MainWindow::on_pushButtonCauseCheckHistory_released()
 {
-    QString className = ui->comboMyClass->currentText();
-    CauseInfo causeInfo(className);
+    QString causeName = ui->comboMyCause->currentText();
+    CauseInfo causeInfo(causeName);
     ErrorClass err = ZeusDao::QueryCauseInfoByName(causeInfo);
     if(err.GetCode() != ERRCODE_SUCCESS)
     {
@@ -657,4 +686,120 @@ void MainWindow::on_comboCreateCauseType_currentIndexChanged(int index)
     {
         ui->layoutCreateCauseClass->setVisible(false);
     }
+}
+
+//成绩管理页面
+void MainWindow::on_pushButtonGrade_released()
+{
+    QString causeName = ui->comboMyCause->currentText();
+    CauseInfo causeInfo(causeName);
+    ErrorClass err = ZeusDao::QueryCauseInfoByName(causeInfo);
+    if(err.GetCode() != ERRCODE_SUCCESS)
+    {
+        QMessageBox::warning(this, "警告", err.GetMsg());
+        return;
+    }
+    CauseGrade gradeDialog(causeInfo, this);
+    gradeDialog.exec();
+}
+
+//评教页面
+void MainWindow::on_pushButtonEvalute_released()
+{
+    QString causeName = ui->comboMyCause->currentText();
+    CauseInfo causeInfo(causeName);
+    ErrorClass err = ZeusDao::QueryCauseInfoByName(causeInfo);
+    if(err.GetCode() != ERRCODE_SUCCESS)
+    {
+        QMessageBox::warning(this, "警告", err.GetMsg());
+        return;
+    }
+    Evalute evalute(causeInfo, userInfo, this);
+    evalute.exec();
+}
+
+//退选功能
+void MainWindow::on_pushButtonAbandonChoose_released()
+{
+    QString causeName = ui->comboMyCause->currentText();
+    CauseInfo causeInfo(causeName);
+    ErrorClass err = ZeusDao::QueryCauseInfoByName(causeInfo);
+    if(err.GetCode() != ERRCODE_SUCCESS)
+    {
+        QMessageBox::warning(this, "警告", err.GetMsg());
+        return;
+    }
+    if (causeInfo.causeType == CAUSE_TYPE_REQUIRED)
+    {
+        QMessageBox::warning(this, "警告", "必修课不能退选");
+        return;
+    }
+    StuCauseRelModel rel(userInfo.id, causeInfo.id);
+    err = ZeusDao::DeleteStuCauseRel(rel);
+    if(err.GetCode() != ERRCODE_SUCCESS)
+    {
+        QMessageBox::warning(this, "警告", err.GetMsg());
+        return;
+    }
+    QMessageBox::information(this, "成功", "退选成功");
+    FlushMyCauseComboBox();
+    ClearMyCauseInfo();
+    ui->comboMyCause->setCurrentIndex(0);
+}
+
+//清空我的课程页面
+void MainWindow::ClearMyCauseInfo()
+{
+    ui->labelCauseNameContent->clear();
+    ui->labelCauseTypeContent->clear();
+    ui->labelCauseScoreContent->clear();
+    ui->labelCauseTeacherContent->clear();
+    ui->labelCauseTimeContent->clear();
+    ui->labelCauseWeekContent->clear();
+    ui->labelCauseClassroomContent->clear();
+}
+
+//学生选课界面
+void MainWindow::on_actionChooseClass_triggered()
+{
+    //切换分页
+    ui->stackedWidget->setCurrentIndex(1);
+    ui->pushButtonGrade->setVisible(false);
+    ui->pushButtonCauseCheck->setVisible(false);
+    ui->pushButtonCauseCheckHistory->setVisible(false);
+    ui->pushButtonAbandonChoose->setVisible(false);
+    ui->pushButtonEvalute->setVisible(false);
+    ui->pushButtonChooseCause->setVisible(true);
+    ui->labelMyCauseTitle->setText("选择课程");
+    ClearMyCauseInfo();
+    //初始化下拉列表
+    ErrorClass err = FlushChooseCauseComboBox();
+    if(err.GetCode() != ERRCODE_SUCCESS)
+    {
+        QMessageBox::warning(this, "警告", err.GetMsg());
+        return;
+    }
+
+    return;
+}
+
+//选择课程按钮
+void MainWindow::on_pushButtonChooseCause_released()
+{
+    QString causeName = ui->comboMyCause->currentText();
+    CauseInfo causeInfo(causeName);
+    ErrorClass err = ZeusDao::QueryCauseInfoByName(causeInfo);
+    if(err.GetCode() != ERRCODE_SUCCESS)
+    {
+        QMessageBox::warning(this, "警告", err.GetMsg());
+        return;
+    }
+    StuCauseRelModel rel(userInfo.id, causeInfo.id);
+    err = ZeusDao::InsertStuCauseRel(rel);
+    if(err.GetCode() != ERRCODE_SUCCESS)
+    {
+        QMessageBox::warning(this, "警告", "课程已经选过,不能重复选择");
+        return;
+    }
+    QMessageBox::information(this, "成功", "选课成功");
 }

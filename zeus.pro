@@ -20,6 +20,7 @@ SOURCES += \
     causecheckhistory.cpp \
     causegrade.cpp \
     errorclass.cpp \
+    evalute.cpp \
     loginwindow.cpp \
     main.cpp \
     mainwindow.cpp \
@@ -33,6 +34,7 @@ HEADERS += \
     causecheckhistory.h \
     causegrade.h \
     errorclass.h \
+    evalute.h \
     loginwindow.h \
     macro.h \
     mainwindow.h \
@@ -45,6 +47,7 @@ FORMS += \
     causecheck.ui \
     causecheckhistory.ui \
     causegrade.ui \
+    evalute.ui \
     loginwindow.ui \
     mainwindow.ui \
     reginstdialog.ui

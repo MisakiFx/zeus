@@ -15,7 +15,7 @@ const int ACCOUNT_TYPE_TEACHER = 2;
 const int ACCOUNT_TYPE_ADMIN = 3;
 
 const int CAUSE_TYPE_REQUIRED = 1;
-const int CAUSE_TYPE_OPTIONAL = 1;
+const int CAUSE_TYPE_OPTIONAL = 2;
 
 const int LEAVING_ASK_STAUTS_ASKING = 1;
 const int LEAVING_ASK_STAUTS_PASS = 2;

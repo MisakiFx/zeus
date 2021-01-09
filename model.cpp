@@ -86,3 +86,13 @@ StuCauseRelModel::StuCauseRelModel(qint64 stuId, qint64 causeId)
 {
 
 }
+
+StuCauseRelModel::StuCauseRelModel(qint64 stuId, qint64 causeId, int score, QString evalute, qint64 id)
+    : stuId(stuId)
+    , causeId(causeId)
+    , score(score)
+    , evalute(evalute)
+    , id(id)
+{
+
+}

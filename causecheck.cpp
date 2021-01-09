@@ -15,7 +15,7 @@ CauseCheck::CauseCheck(QWidget *parent) :
     setAttribute(Qt::WA_DeleteOnClose);
 }
 
-CauseCheck::CauseCheck(CauseInfo& causeInfo, QWidget *parent):
+CauseCheck::CauseCheck(const CauseInfo& causeInfo, QWidget *parent):
     QDialog(parent),
     ui(new Ui::CauseCheck),
     causeInfo(causeInfo)
@@ -43,18 +43,20 @@ CauseCheck::CauseCheck(CauseInfo& causeInfo, QWidget *parent):
 
     //初始化班级信息
     QVector<qint64> classIds;
-    for(int i = 0; i < studentInfo.size(); i++)
-    {
-        classIds.push_back(studentInfo[i].classId);
-    }
     QHash<qint64, QString> classIdNameMap;
-    err = ZeusDao::QueryClassNameByIdBatch(classIds, classIdNameMap);
-    if(err.GetCode() != ERRCODE_SUCCESS)
+    if(studentInfo.size() > 0)
     {
-        QMessageBox::warning(this, "警告", err.GetMsg());
-        return;
+        for(int i = 0; i < studentInfo.size(); i++)
+        {
+            classIds.push_back(studentInfo[i].classId);
+        }
+        err = ZeusDao::QueryClassNameByIdBatch(classIds, classIdNameMap);
+        if(err.GetCode() != ERRCODE_SUCCESS)
+        {
+            QMessageBox::warning(this, "警告", err.GetMsg());
+            return;
+        }
     }
-
     //设置表格行列
     ui->tableWidgetStuTable->setRowCount(studentInfo.size());
     ui->tableWidgetStuTable->setColumnCount(4);

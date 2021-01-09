@@ -14,7 +14,7 @@ class CauseCheck : public QDialog
 
 public:
     explicit CauseCheck(QWidget *parent = nullptr);
-    explicit CauseCheck(CauseInfo& causeInfo, QWidget *parent);
+    explicit CauseCheck(const CauseInfo& causeInfo, QWidget *parent);
     ~CauseCheck();
 
 private slots:

@@ -62,7 +62,8 @@ struct CauseCheckModel
 struct StuCauseRelModel
 {
     StuCauseRelModel();
-    StuCauseRelModel(qint64 stdId, qint64 causeId);
+    StuCauseRelModel(qint64 stuId, qint64 causeId);
+    StuCauseRelModel(qint64 stuId, qint64 causeId, int score, QString evalute, qint64 id = 0);
     qint64 id;
     qint64 stuId;
     qint64 causeId;

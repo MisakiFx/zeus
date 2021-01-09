@@ -25,9 +25,9 @@ private slots:
 
     void on_actionExit_triggered();
 
-    void on_actionMyClass_triggered();
+    void on_actionMyCause_triggered();
 
-    void on_comboMyClass_currentIndexChanged(const QString &arg1);
+    void on_comboMyCause_currentIndexChanged(const QString &arg1);
 
     void on_pushButtonCauseCheck_released();
 
@@ -50,6 +50,16 @@ private slots:
     void on_pushButtonSubbmit_released();
 
     void on_comboCreateCauseType_currentIndexChanged(int index);
+
+    void on_pushButtonGrade_released();
+
+    void on_pushButtonEvalute_released();
+
+    void on_pushButtonAbandonChoose_released();
+
+    void on_actionChooseClass_triggered();
+
+    void on_pushButtonChooseCause_released();
 
 private:
     Ui::MainWindow *ui;
@@ -75,14 +85,16 @@ private:
     void InitAccount(qint64 accountId);
     void Login();
     void DealLoginSlog(qint64 accountId);
-    void InitMenu();
-    ErrorClass FlushMyClassComboBox();
-    ErrorClass FlushMyClassInfo();
+    void InitMainWindow();
+    ErrorClass FlushMyCauseComboBox();
+    ErrorClass FlushChooseCauseComboBox();
+    ErrorClass FlushCauseInfo();
     void InitCreateCause();
     void DrawWeekStatusComb();
     void DrawTimeStatusComb();
     void DrawClassStatusComb();
     void ClearAllCreateCauseInput();
+    void ClearMyCauseInfo();
 };
 
 #endif // MAINWINDOW_H

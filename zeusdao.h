@@ -25,7 +25,12 @@ public:
     static ErrorClass InsertCauseCheckBatch(QVector<CauseCheckModel>& causeCheck);
     static ErrorClass CreateNewClassInfo(CauseInfo& causeInfo);
     static ErrorClass QueryStuIdByClassNameBatch(QStringList className, QVector<qint64>& stuIds);
-    static ErrorClass InsertStuCauseRel(CauseCheckModel rel);
+    static ErrorClass InsertStuCauseRel(const StuCauseRelModel& rel);
+    static ErrorClass QueryStuCauseRelByCauseId(qint64 causeId, QHash<qint64, StuCauseRelModel>& stuIdCauseRelMap);
+    static ErrorClass QueryStuCauseRelByCauseIdAndStuId(StuCauseRelModel& stuCauseRel);
+    static ErrorClass UpdateStuCauseRelScoreBatch(QVector<StuCauseRelModel> rels);
+    static ErrorClass UpdateStuCauseRelEvalute(const StuCauseRelModel& rel);
+    static ErrorClass DeleteStuCauseRel(const StuCauseRelModel& rel);
 };
 
 #endif // ZEUSDAO_H
