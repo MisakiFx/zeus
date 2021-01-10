@@ -21,6 +21,8 @@ SOURCES += \
     causegrade.cpp \
     errorclass.cpp \
     evalute.cpp \
+    leaveaskcontrol.cpp \
+    leavingaskhistory.cpp \
     loginwindow.cpp \
     main.cpp \
     mainwindow.cpp \
@@ -35,10 +37,13 @@ HEADERS += \
     causegrade.h \
     errorclass.h \
     evalute.h \
+    leaveaskcontrol.h \
+    leavingaskhistory.h \
     loginwindow.h \
     macro.h \
     mainwindow.h \
     model.h \
+    readonlydelegate.h \
     reginstdialog.h \
     toolclass.h \
     zeusdao.h
@@ -48,6 +53,8 @@ FORMS += \
     causecheckhistory.ui \
     causegrade.ui \
     evalute.ui \
+    leaveaskcontrol.ui \
+    leavingaskhistory.ui \
     loginwindow.ui \
     mainwindow.ui \
     reginstdialog.ui

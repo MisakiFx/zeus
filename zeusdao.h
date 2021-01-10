@@ -13,6 +13,7 @@ public:
     static ErrorClass IsPasswordCorrect(qint64 account, QString password);
     static ErrorClass InitDao();
     static ErrorClass QureyClassIdByName(QString name, qint64& id);
+    static ErrorClass QueryGradeIdByName(QString name, qint64& id);
     static ErrorClass InsertNewUser(UserInfo& info);
     static ErrorClass QueryUserInfoById(UserInfo& info);
     static ErrorClass QueryClassNameById(qint64 id, QString& name);
@@ -22,6 +23,10 @@ public:
     static ErrorClass QueryCauseInfoByName(CauseInfo& causeInfo);
     static ErrorClass QueryStudentInfoByCauseId(qint64 causeId, QVector<UserInfo>& studentInfo);
     static ErrorClass QueryLeaveAskStatus(QVector<LeaveAsk>& leaveAskInfo);
+    static ErrorClass QueryLeaveAskByTeacherId(qint64 teacherId, QVector<LeaveAsk>& leaveAsks);
+    static ErrorClass QueryAllLeaveAskByTeacherId(qint64 teacherId, QVector<LeaveAsk>& leaveAsks);
+    static ErrorClass InsertLeaveAsk(const LeaveAsk& leaveAskInfo);
+    static ErrorClass UpdateLeaveAskStatusBatch(QVector<LeaveAsk> leaveAskInfo);
     static ErrorClass InsertCauseCheckBatch(QVector<CauseCheckModel>& causeCheck);
     static ErrorClass CreateNewClassInfo(CauseInfo& causeInfo);
     static ErrorClass QueryStuIdByClassNameBatch(QStringList className, QVector<qint64>& stuIds);
@@ -31,6 +36,9 @@ public:
     static ErrorClass UpdateStuCauseRelScoreBatch(QVector<StuCauseRelModel> rels);
     static ErrorClass UpdateStuCauseRelEvalute(const StuCauseRelModel& rel);
     static ErrorClass DeleteStuCauseRel(const StuCauseRelModel& rel);
+    static ErrorClass InserClassInfo(QString name);
+    static ErrorClass InserGradeInfo(QString name);
+    static ErrorClass QueryIsTime(bool& isChooseCauseTime, bool& isEvaluteTime);
 };
 
 #endif // ZEUSDAO_H

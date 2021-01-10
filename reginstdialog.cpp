@@ -42,6 +42,11 @@ void ReginstDialog::InitLineEdit()
 //提交按钮槽函数
 void ReginstDialog::on_pushButtonSubmit_pressed()
 {
+    QMessageBox::StandardButton button = QMessageBox::question(this, "警告", "确定提交?");
+    if(button == QMessageBox::No)
+    {
+        return;
+    }
     QString name = ui->lineEditName->text();
     QString phoneNumber = ui->lineEditPhone->text();
     QString className = ui->comboBoxClass->currentText();

@@ -75,6 +75,24 @@ ErrorClass ZeusDao::QureyClassIdByName(QString name, qint64& id)
     return ErrorClass();
 }
 
+//根据年级组名称获取年级组id
+ErrorClass ZeusDao::QueryGradeIdByName(QString name, qint64 &id)
+{
+    QSqlDatabase db = QSqlDatabase::database();
+    QSqlQuery query;
+    QString sql = QString("SELECT id FROM zeus_grand_info WHERE name = \"%1\"").arg(name);
+    if (!query.exec(sql))
+    {
+        return ErrorClass(ERRCODE_SERVICE_ERROR, db.lastError().text());
+    }
+    if(!query.first())
+    {
+        return ErrorClass(ERRCODE_INPUT_ERROR, "未找到对应年级组，请重新打开页面重试");
+    }
+    id = query.value(0).toLongLong();
+    return ErrorClass();
+}
+
 //插入人员信息
 ErrorClass ZeusDao::InsertNewUser(UserInfo &info)
 {
@@ -221,7 +239,6 @@ ErrorClass ZeusDao::QueryClassNameByIdBatch(QVector<qint64> classId, QHash<qint6
         }
     }
     QString sql = QString("SELECT * FROM zeus_class_info WHERE id IN (%1)").arg(idsString);
-    qDebug() << sql;
     if (!query.exec(sql))
     {
         return ErrorClass(ERRCODE_SERVICE_ERROR, db.lastError().isValid() ? db.lastError().text() : ERRMSG_UNKNOW_MSG);
@@ -230,6 +247,23 @@ ErrorClass ZeusDao::QueryClassNameByIdBatch(QVector<qint64> classId, QHash<qint6
     {
         className.insert(query.value(0).toLongLong(), query.value(1).toString());
     }
+    return ErrorClass();
+}
+
+ErrorClass ZeusDao::QueryLeaveAskByTeacherId(qint64 teacherId, QVector<LeaveAsk> &leaveAsks)
+{
+    QSqlDatabase db = QSqlDatabase::database();
+    QSqlQuery query;
+    QString sql = QString("SELECT * FROM zeus_leave_ask WHERE teacher_id = %1 AND status = %2;").arg(teacherId).arg(LEAVING_ASK_STAUTS_ASKING);
+    if (!query.exec(sql))
+    {
+        return ErrorClass(ERRCODE_SERVICE_ERROR, db.lastError().isValid() ? db.lastError().text() : ERRMSG_UNKNOW_MSG);
+    }
+    for (; query.next(); )
+    {
+        leaveAsks.push_back(LeaveAsk(query.value(0).toLongLong(), LEAVING_ASK_STAUTS_ASKING));
+    }
+
     return ErrorClass();
 }
 
@@ -530,6 +564,148 @@ ErrorClass ZeusDao::InsertStuCauseRel(const StuCauseRelModel& rel)
     {
         db.rollback();
         return ErrorClass(ERRCODE_SERVICE_ERROR, db.lastError().isValid() ? db.lastError().text() : ERRMSG_UNKNOW_MSG);
+    }
+    return ErrorClass();
+}
+
+//新增请假申请
+ErrorClass ZeusDao::InsertLeaveAsk(const LeaveAsk& leaveAskInfo)
+{
+    QSqlDatabase db = QSqlDatabase::database();
+    QSqlQuery query;
+    qint64 id = ToolCLass::IDGenerate();
+    QString sql = QString("INSERT INTO zeus_leave_ask VALUES(%1, %2, %3, '%4', %5, '%6', '%7', %8)")
+            .arg(id)
+            .arg(leaveAskInfo.stuId)
+            .arg(leaveAskInfo.causeId)
+            .arg(leaveAskInfo.causeName)
+            .arg(leaveAskInfo.teacherId)
+            .arg(leaveAskInfo.teachTime)
+            .arg(leaveAskInfo.message)
+            .arg(leaveAskInfo.status);
+    if (!query.exec(sql))
+    {
+        db.rollback();
+        return ErrorClass(ERRCODE_SERVICE_ERROR, db.lastError().isValid() ? db.lastError().text() : "该课程同一时间下已经请过假");
+    }
+    return ErrorClass();
+}
+
+//根据老师工号查询所有与之相关的请假申请
+ErrorClass ZeusDao::QueryAllLeaveAskByTeacherId(qint64 teacherId, QVector<LeaveAsk> &leaveAsks)
+{
+    QSqlDatabase db = QSqlDatabase::database();
+    QSqlQuery query;
+    QString sql = QString("SELECT leaveAsk.id, leaveAsk.cause_id, leaveAsk.cause_name, userInfo.name, userInfo.id AS 'stu_id', leaveAsk.teach_time, leaveAsk.message, leaveAsk.status\
+                          FROM zeus_user_info userInfo\
+                          INNER JOIN zeus_leave_ask leaveAsk ON userInfo.id = leaveAsk.stu_id\
+                          WHERE teacher_id = %1 ORDER BY leaveAsk.teach_time").arg(teacherId);
+    if (!query.exec(sql))
+    {
+        db.rollback();
+        return ErrorClass(ERRCODE_SERVICE_ERROR, db.lastError().isValid() ? db.lastError().text() : ERRMSG_UNKNOW_MSG);
+    }
+    for (; query.next(); )
+    {
+        leaveAsks.push_back(LeaveAsk(query.value(4).toLongLong(),
+                                     query.value(3).toString(),
+                                     query.value(1).toLongLong(),
+                                     query.value(2).toString(),
+                                     teacherId,
+                                     query.value(5).toString(),
+                                     query.value(6).toString(),
+                                     query.value(7).toInt(),
+                                     query.value(0).toLongLong()));
+    }
+    return ErrorClass();
+}
+
+//更新请假审批的状态
+ErrorClass ZeusDao::UpdateLeaveAskStatusBatch(QVector<LeaveAsk> leaveAskInfo)
+{
+    QSqlDatabase db = QSqlDatabase::database();
+    QSqlQuery query;
+    if (!db.transaction())
+    {
+        return ErrorClass(ERRCODE_SERVICE_ERROR, db.lastError().isValid() ? db.lastError().text() : ERRMSG_UNKNOW_MSG);
+    }
+    for (int i = 0; i < leaveAskInfo.size(); i++)
+    {
+        QString sql = QString("UPDATE zeus_leave_ask SET status = %1 WHERE id = %2")
+                .arg(leaveAskInfo[i].status)
+                .arg(leaveAskInfo[i].id);
+        if (!query.exec(sql))
+        {
+            db.rollback();
+            return ErrorClass(ERRCODE_SERVICE_ERROR, db.lastError().isValid() ? db.lastError().text() : ERRMSG_UNKNOW_MSG);
+        }
+    }
+    db.commit();
+    return ErrorClass();
+}
+
+//新增班级
+ErrorClass ZeusDao::InserClassInfo(QString name)
+{
+    QSqlDatabase db = QSqlDatabase::database();
+    qint64 id = ToolCLass::IDGenerate();
+    QSqlQuery query;
+    QString sql = QString("INSERT INTO zeus_class_info VALUES(%1, '%2')")
+            .arg(id)
+            .arg(name);
+    if(!query.exec(sql))
+    {
+        return ErrorClass(ERRCODE_INPUT_ERROR, "班级名称已存在");
+    }
+    return ErrorClass();
+}
+
+//新增年级组
+ErrorClass ZeusDao::InserGradeInfo(QString name)
+{
+    QSqlDatabase db = QSqlDatabase::database();
+    qint64 id = ToolCLass::IDGenerate();
+    QSqlQuery query;
+    QString sql = QString("INSERT INTO zeus_grand_info VALUES(%1, '%2')")
+            .arg(id)
+            .arg(name);
+    if(!query.exec(sql))
+    {
+        return ErrorClass(ERRCODE_INPUT_ERROR, "年级组名称已存在");
+    }
+    return ErrorClass();
+}
+
+//判断是不是选课时间
+ErrorClass ZeusDao::QueryIsTime(bool& isChooseCauseTime, bool& isEvaluteTime)
+{
+    QSqlDatabase db = QSqlDatabase::database();
+    QSqlQuery query;
+
+    QString sql = QString("SELECT * FROM zeus_status_control WHERE id = 1");
+    if(!query.exec(sql))
+    {
+        return ErrorClass(ERRCODE_INPUT_ERROR, db.lastError().isValid() ? db.lastError().text() : ERRMSG_UNKNOW_MSG);
+    }
+    if(!query.first())
+    {
+        return ErrorClass(ERRCODE_INPUT_ERROR, db.lastError().isValid() ? db.lastError().text() : ERRMSG_UNKNOW_MSG);
+    }
+    if (query.value(1).toInt() == 1)
+    {
+        isChooseCauseTime = true;
+        qDebug() << 1;
+    } else
+    {
+        isChooseCauseTime = false;
+    }
+    if (query.value(2).toInt() == 1)
+    {
+        isEvaluteTime = true;
+        qDebug() << 2;
+    }else
+    {
+        isEvaluteTime = false;
     }
     return ErrorClass();
 }

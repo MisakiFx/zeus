@@ -50,6 +50,11 @@ Evalute::~Evalute()
 
 void Evalute::on_pushButtonSubmit_released()
 {
+    QMessageBox::StandardButton button = QMessageBox::question(this, "警告", "确定提交?");
+    if(button == QMessageBox::No)
+    {
+        return;
+    }
     StuCauseRelModel rel(userInfo.id, causeInfo.id);
     if(ui->radioButtonA->isChecked())
     {

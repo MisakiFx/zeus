@@ -105,6 +105,11 @@ CauseCheck::~CauseCheck()
 //提交缺勤学生按钮
 void CauseCheck::on_pushButtonSubmmit_released()
 {
+    QMessageBox::StandardButton button = QMessageBox::question(this, "警告", "确定提交?");
+    if(button == QMessageBox::No)
+    {
+        return;
+    }
     QVector<LeaveAsk> leaveAsks;
     for (int i = 0; i < ui->tableWidgetStuTable->rowCount(); i++)
     {

@@ -13,6 +13,9 @@
   <property name="windowTitle">
    <string>Dialog</string>
   </property>
+  <property name="modal">
+   <bool>true</bool>
+  </property>
   <layout class="QGridLayout" name="gridLayout_2">
    <item row="1" column="0">
     <spacer name="horizontalSpacer">
@@ -58,7 +61,7 @@
         <x>0</x>
         <y>0</y>
         <width>222</width>
-        <height>208</height>
+        <height>209</height>
        </rect>
       </property>
       <layout class="QGridLayout" name="gridLayout">

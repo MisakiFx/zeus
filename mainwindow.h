@@ -4,9 +4,12 @@
 #include <QMainWindow>
 #include <QLineEdit>
 #include <QListWidget>
+#include <QComboBox>
+#include <QSqlTableModel>
 #include "model.h"
 #include "loginwindow.h"
 #include "errorclass.h"
+#include "readonlydelegate.h"
 
 namespace Ui {
 class MainWindow;
@@ -47,7 +50,7 @@ private slots:
 
     void ClassTextChanged(const QString &text);
 
-    void on_pushButtonSubbmit_released();
+    void on_pushButtonCreateCauseSubmit_released();
 
     void on_comboCreateCauseType_currentIndexChanged(int index);
 
@@ -60,6 +63,38 @@ private slots:
     void on_actionChooseClass_triggered();
 
     void on_pushButtonChooseCause_released();
+
+    void on_actionLeaveAsk_triggered();
+
+    void on_pushButtonLeaveAskSubmit_released();
+
+    void on_comboBoxLeaveAskMyCause_currentIndexChanged(int index);
+
+    void on_pushButton_released();
+
+    void on_actionLaeveControl_triggered();
+
+    void on_pushButton_2_released();
+
+    void on_actionStatusControl_triggered();
+
+    void on_pushButtonDataControlSubmit_released();
+
+    void on_actionAllClass_triggered();
+
+    void on_actionAllGrand_triggered();
+
+    void on_actionAllStudent_triggered();
+
+    void on_actionAllCause_triggered();
+
+    void on_actionAddTeacher_triggered();
+
+    void on_pushButtonSubmit_released();
+
+    void on_actionAddClass_triggered();
+
+    void on_pushButtonAddClassGradeSubmit_released();
 
 private:
     Ui::MainWindow *ui;
@@ -82,6 +117,17 @@ private:
     bool bSelectedClass;
     QString strSelectedTextClass;
 
+    QHash<qint64, QComboBox*> idComboxMap;
+
+    QSqlTableModel* tableModel;
+
+    ReadOnlyDelegate* readOnlyDelegate;
+
+    bool isChooseTime;
+    bool isEvaluteTime;
+
+    bool isChooseCause;
+
     void InitAccount(qint64 accountId);
     void Login();
     void DealLoginSlog(qint64 accountId);
@@ -89,12 +135,17 @@ private:
     ErrorClass FlushMyCauseComboBox();
     ErrorClass FlushChooseCauseComboBox();
     ErrorClass FlushCauseInfo();
+    ErrorClass FlushLeaveAskMyCauseCombo();
+    ErrorClass InitLeaveAskControl();
     void InitCreateCause();
+    void InitLeaveAsk();
     void DrawWeekStatusComb();
     void DrawTimeStatusComb();
-    void DrawClassStatusComb();
+    void DrawCauseClassComb();
     void ClearAllCreateCauseInput();
     void ClearMyCauseInfo();
+    void ClearLeaveAskWindow();
+    void InitReginstTeacher();
 };
 
 #endif // MAINWINDOW_H

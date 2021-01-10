@@ -16,7 +16,7 @@ CauseCheckHistory::CauseCheckHistory(QWidget *parent, qint64 causeId) :
                             FROM zeus_cause_check_info causeCheckInfo \
                             INNER JOIN zeus_user_info userInfo ON causeCheckInfo.stu_id = userInfo.id\
                             INNER JOIN zeus_class_info classInfo ON userInfo.class_id = classInfo.id\
-                            WHERE causeCheckInfo.cause_id = %1").arg(causeId));
+                            WHERE causeCheckInfo.cause_id = %1 ORDER BY causeCheckInfo.teach_time").arg(causeId));
     ui->tableViewCauseCheck->setModel(model);
     QHeaderView* headerView = ui->tableViewCauseCheck->horizontalHeader();
     headerView->setSectionResizeMode(QHeaderView::Stretch);

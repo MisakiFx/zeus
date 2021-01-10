@@ -38,10 +38,15 @@ struct CauseInfo
 struct LeaveAsk
 {
     LeaveAsk();
+    LeaveAsk(qint64 id, int status);
     LeaveAsk(qint64 teacherId, qint64 causeId, QString teachTime, qint64 stuId, qint64 id = 0, QString message = "", int status = 0);
+    LeaveAsk(qint64 stuId, qint64 causeId, QString causeName, qint64 teacherId, QString teachTime, QString message, int status, qint64 id = 0);
+    LeaveAsk(qint64 stuId, QString stuName, qint64 causeId, QString causeName, qint64 teacherId, QString teachTime, QString message, int status, qint64 id = 0);
     qint64 	id;
     qint64 	stuId;
+    QString stuName;
     qint64 	causeId;
+    QString causeName;
     qint64 	teacherId;
     QString teachTime;
     QString message;

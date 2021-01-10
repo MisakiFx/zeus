@@ -81,13 +81,13 @@ CauseGrade::CauseGrade(const CauseInfo& causeInfo, QWidget *parent):
         ui->tableWidgetCauseGrand->setColumnWidth(1, 150);
         QTableWidgetItem* name = new QTableWidgetItem(studentInfo[i].name);
         name->setTextAlignment(Qt::AlignHCenter | Qt::AlignVCenter);
-        name->setFlags(id->flags() & (~Qt::ItemIsEditable));
+        name->setFlags(name->flags() & (~Qt::ItemIsEditable));
         ui->tableWidgetCauseGrand->setItem(i, 1, name);
 
         //班级
         QTableWidgetItem* className = new QTableWidgetItem(classIdNameMap[studentInfo[i].classId]);
         className->setTextAlignment(Qt::AlignHCenter | Qt::AlignVCenter);
-        className->setFlags(id->flags() & (~Qt::ItemIsEditable));
+        className->setFlags(className->flags() & (~Qt::ItemIsEditable));
         ui->tableWidgetCauseGrand->setItem(i, 2, className);
 
         //设置代理

@@ -60,6 +60,39 @@ LeaveAsk::LeaveAsk(qint64 teacherId, qint64 causeId, QString teachTime, qint64 s
 
 }
 
+LeaveAsk::LeaveAsk(qint64 id, int status)
+    : id(id)
+    , status(status)
+{
+
+}
+LeaveAsk::LeaveAsk(qint64 stuId, qint64 causeId, QString causeName, qint64 teacherId, QString teachTime, QString message, int status, qint64 id)
+    : id(id)
+    , stuId(stuId)
+    , causeId(causeId)
+    , causeName(causeName)
+    , teacherId(teacherId)
+    , teachTime(teachTime)
+    , message(message)
+    , status(status)
+{
+
+}
+
+LeaveAsk::LeaveAsk(qint64 stuId, QString stuName, qint64 causeId, QString causeName, qint64 teacherId, QString teachTime, QString message, int status, qint64 id)
+    : id(id)
+    , stuId(stuId)
+    , stuName(stuName)
+    , causeId(causeId)
+    , causeName(causeName)
+    , teacherId(teacherId)
+    , teachTime(teachTime)
+    , message(message)
+    , status(status)
+{
+
+}
+
 CauseCheckModel::CauseCheckModel()
 {
 
