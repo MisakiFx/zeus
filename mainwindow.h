@@ -36,7 +36,7 @@ private slots:
 
     void on_pushButtonCauseCheckHistory_released();
 
-    void on_actionCreateClass_triggered();
+    void on_actionCreateCause_triggered();
 
     void WeekStateChanged(int state);
 

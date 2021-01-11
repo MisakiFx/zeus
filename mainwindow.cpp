@@ -89,11 +89,16 @@ void MainWindow::on_actionUserInfo_triggered()
     switch (userInfo.accountType)
     {
     case ACCOUNT_TYPE_STUDENT:
+        ui->labelMyClassTitle->setVisible(true);
+        ui->labelMyClassContent->setVisible(true);
         ui->labelIdTitle->setText("学号:");
         ui->labelMyClassTitle->setText("班级:");
         ui->labelAccountTypeContent->setText("学生");
         break;
     case ACCOUNT_TYPE_TEACHER:
+        ui->labelMyClassTitle->setVisible(true);
+        ui->labelMyClassContent->setVisible(true);
+        ui->labelMyClassTitle->setText("年级组:");
         ui->labelAccountTypeContent->setText("教师");
         break;
     case ACCOUNT_TYPE_ADMIN:
@@ -107,7 +112,7 @@ void MainWindow::on_actionUserInfo_triggered()
 }
 
 //创建课程页
-void MainWindow::on_actionCreateClass_triggered()
+void MainWindow::on_actionCreateCause_triggered()
 {
     ui->stackedWidget->setCurrentIndex(2);
     ClearAllCreateCauseInput();
@@ -222,7 +227,9 @@ void MainWindow::InitMainWindow()
     QVector<LeaveAsk> leaveAsks;
     switch (userInfo.accountType) {
     case ACCOUNT_TYPE_STUDENT:
-        ui->actionCreateClass->setVisible(false);
+        ui->menuClass->menuAction()->setVisible(true);
+        ui->menuLeave->menuAction()->setVisible(true);
+        ui->actionCreateCause->setVisible(false);
         ui->actionLaeveControl->setVisible(false);
         ui->actionLeaveAsk->setVisible(true);
         ui->menuAdmin->menuAction()->setVisible(false);
@@ -240,6 +247,8 @@ void MainWindow::InitMainWindow()
         }
         break;
     case ACCOUNT_TYPE_TEACHER:
+        ui->menuClass->menuAction()->setVisible(true);
+        ui->menuLeave->menuAction()->setVisible(true);
         ZeusDao::QueryLeaveAskByTeacherId(userInfo.id, leaveAsks);
         if (leaveAsks.size() > 0)
         {
@@ -247,7 +256,7 @@ void MainWindow::InitMainWindow()
         }
         ui->actionChooseClass->setVisible(false);
         ui->actionLeaveAsk->setVisible(false);
-        ui->actionCreateClass->setVisible(true);
+        ui->actionCreateCause->setVisible(true);
         ui->actionLaeveControl->setVisible(true);
         ui->menuAdmin->menuAction()->setVisible(false);
         break;
@@ -1165,10 +1174,10 @@ void MainWindow::on_actionStatusControl_triggered()
     ui->tableViewDataControl->setColumnWidth(0, 150);
     ui->tableViewDataControl->setItemDelegateForColumn(0, readOnlyDelegate);
 
-    tableModel->setHeaderData(1, Qt::Horizontal, "选课状态");
+    tableModel->setHeaderData(1, Qt::Horizontal, "选课状态(1:开启, 2:关闭)");
     ui->tableViewDataControl->setColumnWidth(1, 300);
 
-    tableModel->setHeaderData(2, Qt::Horizontal, "评教状态");
+    tableModel->setHeaderData(2, Qt::Horizontal, "评教状态(1:开启, 2:关闭)");
     ui->tableViewDataControl->setColumnWidth(2, 300);
 
     tableModel->setEditStrategy(QSqlTableModel::OnManualSubmit);

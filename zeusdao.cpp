@@ -133,8 +133,8 @@ ErrorClass ZeusDao::QueryUserInfoById(UserInfo &info)
     info.accountType = query.value(2).toInt();
     info.password = query.value(3).toString();
     info.phoneNumber = query.value(4).toString();
-    info.classId = query.value(5).toInt();
-    info.grandId = query.value(6).toInt();
+    info.classId = query.value(5).toLongLong();
+    info.grandId = query.value(6).toLongLong();
     return ErrorClass();
 }
 
@@ -316,7 +316,7 @@ ErrorClass ZeusDao::InsertCauseCheckBatch(QVector<CauseCheckModel>& causeCheck)
         if (!query.exec(sql))
         {
             db.rollback();
-            return ErrorClass(ERRCODE_SERVICE_ERROR, db.lastError().isValid() ? db.lastError().text() : ERRMSG_UNKNOW_MSG);
+            return ErrorClass(ERRCODE_SERVICE_ERROR, db.lastError().isValid() ? db.lastError().text() : QString("该堂课程有学生已经登记过为未到，不能重复登记,学号:%1").arg(causeCheck[i].stuId));
         }
         causeCheck[i].id = id;
     }
@@ -426,7 +426,7 @@ ErrorClass ZeusDao::CreateNewClassInfo(CauseInfo &causeInfo)
     if (!query.exec(sql))
     {
         db.rollback();
-        return ErrorClass(ERRCODE_SERVICE_ERROR, db.lastError().isValid() ? db.lastError().text() : ERRMSG_UNKNOW_MSG);
+        return ErrorClass(ERRCODE_SERVICE_ERROR, db.lastError().isValid() ? db.lastError().text() : "课程名重复");
     }
 
     //如果是必修课，插入上课学生

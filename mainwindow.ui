@@ -18,7 +18,7 @@
     <item>
      <widget class="QStackedWidget" name="stackedWidget">
       <property name="currentIndex">
-       <number>7</number>
+       <number>2</number>
       </property>
       <widget class="QWidget" name="pageUserInfo">
        <layout class="QGridLayout" name="gridLayout">
@@ -2391,7 +2391,7 @@
     </property>
     <addaction name="actionMyCause"/>
     <addaction name="actionChooseClass"/>
-    <addaction name="actionCreateClass"/>
+    <addaction name="actionCreateCause"/>
    </widget>
    <widget class="QMenu" name="menuLeave">
     <property name="title">
@@ -2450,7 +2450,7 @@
     <string>选择课程</string>
    </property>
   </action>
-  <action name="actionCreateClass">
+  <action name="actionCreateCause">
    <property name="text">
     <string>创建课程</string>
    </property>
