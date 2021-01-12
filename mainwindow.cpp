@@ -1176,9 +1176,11 @@ void MainWindow::on_actionStatusControl_triggered()
 
     tableModel->setHeaderData(1, Qt::Horizontal, "选课状态(1:开启, 2:关闭)");
     ui->tableViewDataControl->setColumnWidth(1, 300);
+    ui->tableViewDataControl->setItemDelegateForColumn(1, nullptr);
 
     tableModel->setHeaderData(2, Qt::Horizontal, "评教状态(1:开启, 2:关闭)");
     ui->tableViewDataControl->setColumnWidth(2, 300);
+    ui->tableViewDataControl->setItemDelegateForColumn(2, nullptr);
 
     tableModel->setEditStrategy(QSqlTableModel::OnManualSubmit);
 }
@@ -1219,6 +1221,7 @@ void MainWindow::on_actionAllClass_triggered()
 
     tableModel->setHeaderData(1, Qt::Horizontal, "班级名称");
     ui->tableViewDataControl->setColumnWidth(1, 300);
+    ui->tableViewDataControl->setItemDelegateForColumn(1, nullptr);
 
     tableModel->setEditStrategy(QSqlTableModel::OnManualSubmit);
 }
@@ -1239,6 +1242,7 @@ void MainWindow::on_actionAllGrand_triggered()
 
     tableModel->setHeaderData(1, Qt::Horizontal, "年级组名称");
     ui->tableViewDataControl->setColumnWidth(1, 300);
+    ui->tableViewDataControl->setItemDelegateForColumn(1, nullptr);
 
     tableModel->setEditStrategy(QSqlTableModel::OnManualSubmit);
 }
@@ -1258,6 +1262,7 @@ void MainWindow::on_actionAllStudent_triggered()
 
     tableModel->setHeaderData(1, Qt::Horizontal, "用户名称");
     ui->tableViewDataControl->setColumnWidth(1, 150);
+    ui->tableViewDataControl->setItemDelegateForColumn(1, nullptr);
 
     tableModel->setHeaderData(2, Qt::Horizontal, "用户类型(1:学生,2:教师,3:管理员)");
     ui->tableViewDataControl->setColumnWidth(2, 150);
@@ -1269,12 +1274,15 @@ void MainWindow::on_actionAllStudent_triggered()
 
     tableModel->setHeaderData(4, Qt::Horizontal, "电话");
     ui->tableViewDataControl->setColumnWidth(4, 150);
+    ui->tableViewDataControl->setItemDelegateForColumn(4, nullptr);
 
     tableModel->setHeaderData(5, Qt::Horizontal, "班级id");
     ui->tableViewDataControl->setColumnWidth(5, 150);
+    ui->tableViewDataControl->setItemDelegateForColumn(5, nullptr);
 
     tableModel->setHeaderData(6, Qt::Horizontal, "年级组id");
     ui->tableViewDataControl->setColumnWidth(6, 150);
+    ui->tableViewDataControl->setItemDelegateForColumn(6, nullptr);
 
     tableModel->setEditStrategy(QSqlTableModel::OnManualSubmit);
 }
@@ -1302,6 +1310,7 @@ void MainWindow::on_actionAllCause_triggered()
 
     tableModel->setHeaderData(3, Qt::Horizontal, "课程学分");
     ui->tableViewDataControl->setColumnWidth(3, 150);
+    ui->tableViewDataControl->setItemDelegateForColumn(3, nullptr);
 
     tableModel->setHeaderData(4, Qt::Horizontal, "课程教师工号");
     ui->tableViewDataControl->setColumnWidth(4, 150);
@@ -1309,12 +1318,15 @@ void MainWindow::on_actionAllCause_triggered()
 
     tableModel->setHeaderData(5, Qt::Horizontal, "上课时间");
     ui->tableViewDataControl->setColumnWidth(5, 150);
+    ui->tableViewDataControl->setItemDelegateForColumn(5, nullptr);
 
     tableModel->setHeaderData(6, Qt::Horizontal, "上课周次");
     ui->tableViewDataControl->setColumnWidth(6, 150);
+    ui->tableViewDataControl->setItemDelegateForColumn(6, nullptr);
 
     tableModel->setHeaderData(7, Qt::Horizontal, "上课教室");
     ui->tableViewDataControl->setColumnWidth(7, 150);
+    ui->tableViewDataControl->setItemDelegateForColumn(7, nullptr);
 
     tableModel->setEditStrategy(QSqlTableModel::OnManualSubmit);
 }
